@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-def draw_bboxes(image, bboxes, font_size=0.5, thresh=0.5, colors=None):
+def draw_bboxes(image, bboxes, font_size=0.5, thresh=0.2, colors=None):
     """Draws bounding boxes on an image.
 
     Args:

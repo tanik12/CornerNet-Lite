@@ -2,6 +2,7 @@ from .base import Base, load_cfg, load_nnet
 from .paths import get_file_path
 from .config import SystemConfig
 from .dbs.coco import COCO
+from .dbs.voc import VOC
 
 class CornerNet(Base):
     def __init__(self):
@@ -24,14 +25,17 @@ class CornerNet_Squeeze(Base):
         from .models.CornerNet_Squeeze import model
 
         cfg_path   = get_file_path("..", "configs", "CornerNet_Squeeze.json")
-        model_path = get_file_path("..", "cache", "nnet", "CornerNet_Squeeze", "CornerNet_Squeeze_500000.pkl")
+        model_path = get_file_path("..", "cache", "nnet", "CornerNet_Squeeze", "CornerNet_Squeeze_35000.pkl")
+        #model_path = get_file_path("..", "cache", "nnet", "CornerNet_Squeeze", "CornerNet_Squeeze_500000.pkl")
 
         cfg_sys, cfg_db = load_cfg(cfg_path)
         sys_cfg = SystemConfig().update_config(cfg_sys)
-        coco    = COCO(cfg_db)
+        voc    = VOC(cfg_db)
+        #coco    = COCO(cfg_db)
 
         cornernet = load_nnet(sys_cfg, model())
-        super(CornerNet_Squeeze, self).__init__(coco, cornernet, cornernet_inference, model=model_path)
+        super(CornerNet_Squeeze, self).__init__(voc, cornernet, cornernet_inference, model=model_path)
+        #super(CornerNet_Squeeze, self).__init__(coco, cornernet, cornernet_inference, model=model_path)
 
 class CornerNet_Saccade(Base):
     def __init__(self):

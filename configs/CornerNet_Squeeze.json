@@ -1,7 +1,7 @@
 {
     "system": {
-        "dataset": "COCO",
-        "batch_size": 55,
+        "dataset": "VOC",
+        "batch_size": 15,
         "sampling_function": "cornernet",
 
         "train_split": "trainval",
@@ -19,9 +19,10 @@
         "stepsize": 450000,
         "snapshot": 5000,
 
-        "chunk_sizes": [13, 14, 14, 14],
+        "chunk_sizes": [15],
 
         "data_dir": "./data"
+
     },
     
     "db": {
@@ -45,7 +46,7 @@
 
         "top_k": 20,
         "num_dets": 100,
-        "categories": 80,
+        "categories": 20,
         "ae_threshold": 0.5,
         "nms_threshold": 0.5,
 

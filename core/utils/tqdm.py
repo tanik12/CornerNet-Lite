@@ -2,6 +2,7 @@ import sys
 import numpy as np
 import contextlib
 
+#from tqdm import tqdm
 from tqdm import tqdm
 
 class TqdmFile(object):
