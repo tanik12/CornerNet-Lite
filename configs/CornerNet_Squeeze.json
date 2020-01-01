@@ -19,8 +19,9 @@
         "stepsize": 450000,
         "snapshot": 5000,
 
+        "//": "categoriesの数はカテゴリ数",
+        "categories": 10,
         "chunk_sizes": [15],
-
         "data_dir": "./data"
 
     },
@@ -45,8 +46,9 @@
         "test_flipped": false,
 
         "top_k": 20,
+        "//": "categoriesの数はsystemのカテゴリ数と同じ数を書く(systemは上に書いてある)",
+        "categories": 10,
         "num_dets": 100,
-        "categories": 20,
         "ae_threshold": 0.5,
         "nms_threshold": 0.5,
 

@@ -32,18 +32,29 @@ class VOC(DETECTION):
             [-0.56089297, 0.71832671, 0.41158938]
         ], dtype=np.float32)
 
+        #自作のデータセット内のカテゴリidを記入
         self._voc_cls_ids = [
-            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,12, 13,
-            14, 15, 16, 17, 18, 19, 20, 
+            1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+            #1, 2, 3, 4, 6, 8, 10, 16, 17, 18 #VOCのカテゴリidに合わせる必要があるかも。確認中...
         ]
 
+        #self._voc_cls_ids = [
+        #    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,12, 13,
+        #    14, 15, 16, 17, 18, 19, 20, 
+        #]
+
+        #自作のデータセット内のカテゴリidに紐づくカテゴリ名を記入。
         self._voc_cls_names = [
-                      'aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car',
-                       'cat', 'chair', 'cow', 'diningtable', 'dog', 'horse',
-                       'motorbike', 'person', 'pottedplant', 'sheep', 'sofa', 'train',
-                       'tvmonitor',
-
+                      "person", "bicycle", "car", "motorbike", "bus", "truck", "traffic light", "bird", "cat", "dog"
         ]
+
+        #self._voc_cls_names = [
+        #              'aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car',
+        #               'cat', 'chair', 'cow', 'diningtable', 'dog', 'horse',
+        #               'motorbike', 'person', 'pottedplant', 'sheep', 'sofa', 'train',
+        #               'tvmonitor',
+
+        #]
 
         self._cls2voc  = {ind + 1: voc_id for ind, voc_id in enumerate(self._voc_cls_ids)}
         self._voc2cls  = {voc_id: cls_id for cls_id, voc_id in self._cls2voc.items()}
@@ -51,7 +62,8 @@ class VOC(DETECTION):
         self._name2voc = {cls_name: cls_id for cls_id, cls_name in self._voc2name.items()}
 
         if split is not None:
-            voc_dir = os.path.join('/home/gisen/data/VOCdevkit/', "VOC2012")
+            voc_dir = os.path.join('/home/tani/git/coco_analytics/VOCdevkit/', "VOC2012")
+            #voc_dir = os.path.join('/home/tani/data/VOCdevkit/', "VOC2012")
             #voc_dir = os.path.join('/home/rock/CornerNet-Lite-master/data/', "VOC2012")
 
             self._data_dir  = os.path.join(voc_dir, 'JPEGImages')
@@ -67,7 +79,8 @@ class VOC(DETECTION):
         eval_ids = {}
         detections = {}
         i = 0
-        xml_path='/home/gisen/data/VOCdevkit/VOC2012/Annotations'
+        xml_path = '/home/tani/git/coco_analytics/VOCdevkit/VOC2012/Annotations'
+        #xml_path='/home/tani/data/VOCdevkit/VOC2012/Annotations'
         #xml_path='/home/rock/CornerNet-Lite-master/data/VOC2012/Annotations'
         for f in os.listdir(xml_path):
             res = []

@@ -91,8 +91,9 @@ class model(hg_net):
         tl_modules = nn.ModuleList([corner_pool(256, TopPool, LeftPool) for _ in range(stacks)])
         br_modules = nn.ModuleList([corner_pool(256, BottomPool, RightPool) for _ in range(stacks)])
 
-        tl_heats = nn.ModuleList([self._pred_mod(20) for _ in range(stacks)])   #x is your dataset categories
-        br_heats = nn.ModuleList([self._pred_mod(20) for _ in range(stacks)])
+        #カテゴリ数を書く ex) カテゴリ数が10の場合 self._pred_mod(10)
+        tl_heats = nn.ModuleList([self._pred_mod(10) for _ in range(stacks)])   #x is your dataset categories
+        br_heats = nn.ModuleList([self._pred_mod(10) for _ in range(stacks)])
         #tl_heats = nn.ModuleList([self._pred_mod(80) for _ in range(stacks)])
         #br_heats = nn.ModuleList([self._pred_mod(80) for _ in range(stacks)])
         for tl_heat, br_heat in zip(tl_heats, br_heats):
