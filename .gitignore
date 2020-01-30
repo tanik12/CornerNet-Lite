@@ -16,3 +16,5 @@ nnet/__pycache__/
 
 *.pyc
 *.o*
+.vscode
+jpg
