@@ -3,12 +3,16 @@ sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import cv2
 from core.detectors import CornerNet_Squeeze
 from core.vis_utils import draw_bboxes
+import sys
 
-def cam(detector):
-    cap = cv2.VideoCapture(0)   
-    cap.set(cv2.CAP_PROP_FPS, 60)           # カメラFPSを60FPSに設定
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640) # カメラ画像の横幅を1280に設定
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480) # カメラ画像の縦幅を720に設定
+def cam(arg, detector):
+    if arg == "video":
+        cap = cv2.VideoCapture('/home/gisen/Documents/rosbag/2019-07-09-15-25-21.avi')
+    elif arg == "camera":
+        cap = cv2.VideoCapture(0)   
+        cap.set(cv2.CAP_PROP_FPS, 60)           # カメラFPSを60FPSに設定
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640) # カメラ画像の横幅を1280に設定
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480) # カメラ画像の縦幅を720に設定
 
     while True:
         # VideoCaptureから1フレーム読み込む
@@ -36,8 +40,10 @@ def obj_inference(detector, image):
     return image, bboxes
 
 def main():
+    args = sys.argv
+
     detector = CornerNet_Squeeze()
-    cam(detector)
+    cam(args[2], detector)
 
 if __name__ == "__main__":
     main()
