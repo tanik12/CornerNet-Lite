@@ -23,10 +23,11 @@ def draw_bboxes(image, bboxes, font_size=0.5, thresh=0.35, colors=None):
     """
 
     image = image.copy()
+
     for cat_name in bboxes:
         keep_inds = bboxes[cat_name][:, -1] > thresh
         cat_size  = cv2.getTextSize(cat_name, cv2.FONT_HERSHEY_SIMPLEX, font_size, 2)[0]
-
+        
         if colors is None:
             color = np.random.random((3, )) * 0.6 + 0.4
             color = (color * 255).astype(np.int32).tolist()
@@ -61,3 +62,26 @@ def draw_bboxes(image, bboxes, font_size=0.5, thresh=0.35, colors=None):
                 color, 2
             )
     return image
+
+def extract_specific_object(image, bboxes, thresh=0.01):
+    img2 = image.copy()
+
+    idx = bboxes["traffic signal"][:, -1] > thresh
+    print(idx)
+
+    #error処理もちゃんと入れること
+    for bbox in bboxes["traffic signal"][idx]:
+        print(bbox)
+        
+        #intじゃないとエラーが出る。
+        x1 = int(bbox[0])
+        y1 = int(bbox[1])
+        x2 = int(bbox[2])
+        y2 = int(bbox[3])
+        
+        dst = img2[y1:y2,x1:x2]
+
+        #書き出し
+        cv2.imwrite('cut.jpg',dst)
+
+

@@ -2,7 +2,7 @@ import sys
 sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import cv2
 from core.detectors import CornerNet_Squeeze
-from core.vis_utils import draw_bboxes
+from core.vis_utils import draw_bboxes, extract_specific_object
 import sys
 
 def cam(arg, detector):
@@ -46,6 +46,7 @@ def cam(arg, detector):
 def obj_inference(detector, image):   
     bboxes = detector(image)
     #print(bboxes)
+    extract_specific_object(image, bboxes)
     image  = draw_bboxes(image, bboxes)
     #cv2.imwrite("demo_out.jpg", image)
     return image, bboxes
