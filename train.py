@@ -149,7 +149,9 @@ def train(training_dbs, validation_db, system_config, model, args):
 
     if start_iter:
         nnet.load_params(start_iter)
+        #learning_rate /= (decay_rate ** (start_iter // stepsize))
         learning_rate /= (decay_rate ** (start_iter // stepsize))
+        print("AAAAAAAAAAAAA: ", learning_rate)
         nnet.set_lr(learning_rate)
         print("Process {}: training starts from iteration {} with learning_rate {}".format(rank, start_iter + 1, learning_rate))
     else:

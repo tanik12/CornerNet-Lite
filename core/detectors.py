@@ -25,7 +25,8 @@ class CornerNet_Squeeze(Base):
         from .models.CornerNet_Squeeze import model
 
         cfg_path   = get_file_path("..", "configs", "CornerNet_Squeeze.json")
-        model_path = get_file_path("..", "cache", "nnet", "CornerNet_Squeeze", "CornerNet_Squeeze_270000.pkl")
+        #model_path = get_file_path("..", "cache", "nnet", "CornerNet_Squeeze", "CornerNet_Squeeze_330000.pkl")
+        model_path = get_file_path("..", "cache", "nnet", "CornerNet_Squeeze", "CornerNet_Squeeze_500000.pkl")
         #model_path = get_file_path("..", "cache", "nnet", "CornerNet_Squeeze", "CornerNet_Squeeze_500000.pkl")
 
         cfg_sys, cfg_db = load_cfg(cfg_path)

@@ -1,13 +1,13 @@
 {
     "system": {
         "dataset": "VOC",
-        "batch_size": 15,
+        "batch_size": 14,
         "sampling_function": "cornernet",
 
         "train_split": "trainval",
         "val_split": "minival",
 
-        "learning_rate": 0.00025,
+        "learning_rate": 0.01,
         "decay_rate": 10,
 
         "val_iter": 100,
@@ -16,10 +16,10 @@
         "prefetch_size": 5,
 
         "max_iter": 500000,
-        "stepsize": 450000,
+        "stepsize": 2000,
         "snapshot": 5000,
 
-        "chunk_sizes": [15],
+        "chunk_sizes": [7,7],
 
         "data_dir": "./data_own"
 
