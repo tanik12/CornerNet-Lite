@@ -1,7 +1,9 @@
 import cv2
 import numpy as np
+import os
 
-def draw_bboxes(image, bboxes, font_size=0.5, thresh=0.2, colors=None):
+#def draw_bboxes(image, bboxes, font_size=0.5, thresh=0.35, colors=None):
+def draw_bboxes(image, bboxes, font_size=0.5, thresh=0.35, colors=None):
     """Draws bounding boxes on an image.
 
     Args:
@@ -22,10 +24,11 @@ def draw_bboxes(image, bboxes, font_size=0.5, thresh=0.2, colors=None):
     """
 
     image = image.copy()
+
     for cat_name in bboxes:
         keep_inds = bboxes[cat_name][:, -1] > thresh
         cat_size  = cv2.getTextSize(cat_name, cv2.FONT_HERSHEY_SIMPLEX, font_size, 2)[0]
-
+        
         if colors is None:
             color = np.random.random((3, )) * 0.6 + 0.4
             color = (color * 255).astype(np.int32).tolist()
@@ -60,3 +63,56 @@ def draw_bboxes(image, bboxes, font_size=0.5, thresh=0.2, colors=None):
                 color, 2
             )
     return image
+
+def extract_specific_object(image, bboxes, count=1, image_name=None, thresh=0.35, flag=False):
+    if flag:
+        img2 = image.copy()
+        _, traffic_signal_dir, pedestrian_signal_dir = check_dir()
+        exstract_list = ["traffic signal", "pedestrian signal"]
+
+        for item in exstract_list:
+            idx = bboxes[item][:, -1] > thresh
+        
+            #error処理もちゃんと入れること
+            for bbox in bboxes[item][idx]:
+                #intじゃないとエラーが出る。
+                x1 = int(bbox[0])
+                y1 = int(bbox[1])
+                x2 = int(bbox[2])
+                y2 = int(bbox[3])
+                
+                trm_img = img2[y1:y2,x1:x2]
+        
+                try:
+                    #書き出し
+                    if item == "traffic signal":
+                        cv2.imwrite(traffic_signal_dir + '/%06.f.jpg' % count, trm_img)
+                    elif item == "pedestrian signal":
+                        cv2.imwrite(pedestrian_signal_dir + '/%06.f.jpg' % count, trm_img)
+                except:
+                    print("書き込み失敗")
+        return None, None
+    else:
+        img2 = image.copy()
+        idx_traffic = bboxes["traffic signal"][:, -1] > thresh
+        idx_pdstrn = bboxes["pedestrian signal"][:, -1] > thresh
+        #error処理もちゃんと入れること
+        bboxes_traffic = bboxes["traffic signal"][idx_traffic]
+        bboxes_pdstrn = bboxes["pedestrian signal"][idx_pdstrn]
+
+        return bboxes_traffic, bboxes_pdstrn            
+
+def check_dir():
+    current_path = os.getcwd()
+    save_parent_dir = current_path + "/trim_img/"
+    save_child_dir_1 = current_path + "/trim_img/traffic_signal"
+    save_child_dir_2 = current_path + "/trim_img/pedestrian_signal"
+    
+    if not os.path.isdir(save_parent_dir):
+        os.mkdir(save_parent_dir)
+    if not os.path.isdir(save_child_dir_1):
+        os.mkdir(save_child_dir_1)
+    if not os.path.isdir(save_child_dir_2):
+        os.mkdir(save_child_dir_2)
+
+    return save_parent_dir, save_child_dir_1, save_child_dir_2
