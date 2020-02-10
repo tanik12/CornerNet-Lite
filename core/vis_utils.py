@@ -91,8 +91,16 @@ def extract_specific_object(image, bboxes, count=1, image_name=None, thresh=0.35
                         cv2.imwrite(pedestrian_signal_dir + '/%06.f.jpg' % count, trm_img)
                 except:
                     print("書き込み失敗")
+        return None, None
     else:
-        pass
+        img2 = image.copy()
+        idx_traffic = bboxes["traffic signal"][:, -1] > thresh
+        idx_pdstrn = bboxes["pedestrian signal"][:, -1] > thresh
+        #error処理もちゃんと入れること
+        bboxes_traffic = bboxes["traffic signal"][idx_traffic]
+        bboxes_pdstrn = bboxes["pedestrian signal"][idx_pdstrn]
+
+        return bboxes_traffic, bboxes_pdstrn            
 
 def check_dir():
     current_path = os.getcwd()

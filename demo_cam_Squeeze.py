@@ -14,6 +14,7 @@ def load_color4train(data_path):
 def cam(arg, detector):
     count = 1
     save_flag = False
+    print(arg)
 
     if arg == "video":
         #cap = cv2.VideoCapture('/home/gisen/Documents/rosbag/2019-07-09-15-25-21.avi')
@@ -41,17 +42,15 @@ def cam(arg, detector):
             # VideoCaptureから1フレーム読み込む
             try:
                 ret, frame = cap.read()
-                image, bboxes = obj_inference(detector, frame)
+                image, bboxes, bboxes_traffic, bboxes_pdstrn = obj_inference(detector, frame)
             except:
                 break
     
             if arg == "video":
                 writer.write(image) # 画像を1フレーム分として書き込み
-                pass
     
             # 加工なし画像を表示する
             cv2.imshow('Raw Frame', image)
-    
             # キー入力を1ms待って、k が27（ESC）だったらBreakする
             k = cv2.waitKey(1)
             if k == 27:
@@ -60,7 +59,7 @@ def cam(arg, detector):
             for img_path in imgs_path:
                 img_name = os.path.basename(img_path)
                 img = cv2.imread(img_path)
-                image, bboxes = obj_inference(detector, img, count, image_name=img_name, flag=save_flag)
+                image, bboxes, _, _ = obj_inference(detector, img, count, image_name=img_name, flag=save_flag)
                 count += 1
             break
 
@@ -69,20 +68,26 @@ def cam(arg, detector):
     writer.release()
     cv2.destroyAllWindows()
 
-def obj_inference(detector, image, count=1, image_name=None, flag=False):   
+def obj_inference(detector, image, count=1, image_name=None, flag=False):
+    bboxes_traffic = ""
+    bboxes_pdstrn = ""
+
     bboxes = detector(image)
-    extract_specific_object(image, bboxes, count, image_name=image_name, flag=flag)
+    if flag:
+        bboxes_traffic, bboxes_pdstrn = extract_specific_object(image, bboxes, count, image_name=image_name, flag=flag)
+    else:
+        bboxes_traffic, bboxes_pdstrn = extract_specific_object(image, bboxes, count, image_name=image_name, flag=flag)
 
     image  = draw_bboxes(image, bboxes)
 
-    return image, bboxes
+    return image, bboxes, bboxes_traffic, bboxes_pdstrn
 
 def record(width, height):
     frame_rate = 10.0 # フレームレート
     size = (width, height) # 動画の画面サイズ
     
     fmt = cv2.VideoWriter_fourcc(*"XVID") # ファイル形式(ここではmp4)
-    writer = cv2.VideoWriter('./outtest.mp4', fmt, frame_rate, size) # ライター作成
+    writer = cv2.VideoWriter('./outtest.avi', fmt, frame_rate, size) # ライター作成
     return writer
 
 def main():
