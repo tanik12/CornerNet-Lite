@@ -34,8 +34,8 @@ class VOC(DETECTION):
 
         #自作のデータセット内のカテゴリidを記入
         self._voc_cls_ids = [
-            ###1, 2, 3, 4, 5, 6, 7, 8, 9, 10
-            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11
+            1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+            ###1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11
             #1, 2, 3, 4, 6, 8, 10, 16, 17, 18 #VOCのカテゴリidに合わせる必要があるかも。確認中...
         ]
 
@@ -46,8 +46,8 @@ class VOC(DETECTION):
 
         #自作のデータセット内のカテゴリidに紐づくカテゴリ名を記入。
         self._voc_cls_names = [
-                      ###"traffic signal", "pedestrian signal", "person", "bicycle", "car", "motorbike", "bus", "truck", "dog", "cat",
-                      "traffic signal", "pedestrian signal", "person", "bicycle", "car", "motorbike", "bus", "truck", "dog", "cat", "bird",
+                      "traffic signal", "pedestrian signal", "person", "bicycle", "car", "motorbike", "bus", "truck", "dog", "cat",
+                      ###"traffic signal", "pedestrian signal", "person", "bicycle", "car", "motorbike", "bus", "truck", "dog", "cat", "bird",
         ]
 
         #self._voc_cls_names = [
@@ -64,8 +64,8 @@ class VOC(DETECTION):
         self._name2voc = {cls_name: cls_id for cls_id, cls_name in self._voc2name.items()}
 
         if split is not None:
-            ###voc_dir = os.path.join('/home/gisen/data_own_nobird/VOCdevkit', "VOC_own")
-            voc_dir = os.path.join('/home/gisen/data_own/VOCdevkit', "VOC_own")
+            voc_dir = os.path.join('/home/gisen/data_own_nobird/VOCdevkit', "VOC_own")
+            ###voc_dir = os.path.join('/home/gisen/data_own/VOCdevkit', "VOC_own")
             #voc_dir = os.path.join('/home/tani/git/coco_analytics/VOCdevkit/', "VOC2012")
             #voc_dir = os.path.join('/home/tani/data/VOCdevkit/', "VOC2012")
             #voc_dir = os.path.join('/home/rock/CornerNet-Lite-master/data/', "VOC2012")
@@ -83,8 +83,8 @@ class VOC(DETECTION):
         eval_ids = {}
         detections = {}
         i = 0
-        ###xml_path = '/home/gisen/data_own_nobird/VOCdevkit/VOC_own/Annotations'
-        xml_path = '/home/gisen/data_own/VOCdevkit/VOC_own/Annotations'
+        xml_path = '/home/gisen/data_own_nobird/VOCdevkit/VOC_own/Annotations'
+        ###xml_path = '/home/gisen/data_own/VOCdevkit/VOC_own/Annotations'
         #xml_path = '/home/tani/git/coco_analytics/VOCdevkit/VOC2012/Annotations'
         #xml_path='/home/tani/data/VOCdevkit/VOC2012/Annotations'
         #xml_path='/home/rock/CornerNet-Lite-master/data/VOC2012/Annotations'
