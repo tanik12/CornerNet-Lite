@@ -1,5 +1,5 @@
 import sys
-sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
+#sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import cv2
 import numpy as np
 import pandas as pd
@@ -9,6 +9,10 @@ import os
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score
 import pickle
+
+label_dict = {0:"pedestrian_signal_blue", 1:"pedestrian_signal_red", 
+              2:"traffic_signal_blue", 3:"traffic_signal_red", 4:"traffic_signal_yellow", 
+              5:"pedestrian_signal_unknown", 6:"traffic_signal_unknown"}
 
 def dir_check(model_dirpath):
     if os.path.exists(model_dirpath):
@@ -26,14 +30,12 @@ def load_model(model_dirpath):
         print("Do not exist model file! Please make model file.", e)
         sys.exit()
 
-def inference(x_train, y_train, model_dirpath):
+def inference(x_train, model):
     x_train = x_train.reshape(1, -1)
-    y_train = y_train.reshape(1, -1)
-
-    clf = load_model(model_dirpath)
-    pred = clf.predict(x_train)
+    pred = model.predict(x_train)
+    label_name = label_dict[pred[0]]
     
-    return pred
+    return pred, label_name
 
 if __name__ == "__main__":
     current_path = os.getcwd()
@@ -42,5 +44,5 @@ if __name__ == "__main__":
     #test data
     test_x = np.array([64.4052, 85.112, 87.6772, 102.0968, 64.3176, 89.7904])
     test_y = np.array([0])
-    pred_class = inference(test_x, test_y,  model_dirpath)
+    pred_class = inference(test_x, model_dirpath)
     print("予想ラベル出力: ", pred_class)

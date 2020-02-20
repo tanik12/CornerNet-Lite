@@ -2,7 +2,7 @@ import numpy as np
 import glob
 import os
 import sys
-sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
+#sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import cv2
 
 # 赤色の検出
@@ -130,33 +130,43 @@ def color_info(img):
 
     return color_arr, hsv, img 
 
-def extract_color_info(img):
+def extract_color_info(images):
     feat_list = []
     hist_clr = np.array([])
+    print(len(images))
     
-    color_arr, hsv, img = color_info(img)
-    hist_r, hist_g, hist_b = color_hist(img)
-    hist_clr = np.vstack((hist_r, hist_g))
-    hist_clr = np.vstack((hist_clr, hist_b))
-    red_mask, red_masked_img, avg_red_masked_img = detect_red_color(img, hsv)
-    blue_mask, bule_masked_img, avg_blue_masked_img = detect_blue_color(img, hsv)
-    green_mask, green_masked_img, avg_green_masked_img = detect_green_color(img, hsv)
-    yellow_mask, yellow_masked_img, avg_yellow_masked_img = detect_yellow_color(img, hsv)
+    for img in images:
+        tmpB = []
+
+        img = img[0]
+        #img = cv2.imread(img, cv2.IMREAD_COLOR)
+        print("FFFFFFFFFFFFFFFFf")
+        color_arr, hsv, img = color_info(img)
+        print("lllllllllllllllll")
+        hist_r, hist_g, hist_b = color_hist(img)
+        hist_clr = np.vstack((hist_r, hist_g))
+        hist_clr = np.vstack((hist_clr, hist_b))
+        red_mask, red_masked_img, avg_red_masked_img = detect_red_color(img, hsv)
+        blue_mask, bule_masked_img, avg_blue_masked_img = detect_blue_color(img, hsv)
+        green_mask, green_masked_img, avg_green_masked_img = detect_green_color(img, hsv)
+        yellow_mask, yellow_masked_img, avg_yellow_masked_img = detect_yellow_color(img, hsv)
+        
+        ######
+        #要検討
+        #sum_array = avg_red_masked_img + avg_blue_masked_img + avg_green_masked_img + yellow_masked_img  
+        sum_array = (avg_red_masked_img + (avg_blue_masked_img + avg_green_masked_img)/2 + avg_yellow_masked_img) / 3 
+        ######
     
-    ######
-    #要検討
-    #sum_array = avg_red_masked_img + avg_blue_masked_img + avg_green_masked_img + yellow_masked_img  
-    sum_array = (avg_red_masked_img + (avg_blue_masked_img + avg_green_masked_img)/2 + avg_yellow_masked_img) / 3 
-    ######
+        tmpB.append(red_masked_img)
+        tmpB.append(bule_masked_img)
+        tmpB.append(green_masked_img)
+        tmpB.append(yellow_masked_img)
+        tmpB.append(color_arr)
+        tmpB.append(sum_array)
+        tmpB.append(hist_clr)
 
-    feat_list.append(red_masked_img)
-    feat_list.append(bule_masked_img)
-    feat_list.append(green_masked_img)
-    feat_list.append(yellow_masked_img)
-    feat_list.append(color_arr)
-    feat_list.append(sum_array)
-    feat_list.append(hist_clr)
-
+        feat_list.append(tmpB)
+    
     return feat_list
 
 #colorヒストグラムの取得

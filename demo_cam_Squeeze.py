@@ -7,6 +7,10 @@ import sys
 import glob
 import os
 
+from extract_color import extract_color_info
+from  model import dir_check, load_model, inference
+import numpy as np
+
 def load_color4train(data_path):
     imgs_path = glob.glob(data_path)
     return imgs_path 
@@ -15,6 +19,10 @@ def cam(arg, detector):
     count = 1
     save_flag = False
     print(arg)
+
+    current_path = os.getcwd()
+    model_dirpath = current_path + "/model"
+    clf = load_model(model_dirpath)
 
     if arg == "video":
         #cap = cv2.VideoCapture('/home/gisen/Documents/rosbag/2019-07-09-15-25-21.avi')
@@ -39,12 +47,48 @@ def cam(arg, detector):
     #while True:
     while (cap.isOpened()):
         if arg == "video" or arg == "camera":
-            # VideoCaptureから1フレーム読み込む
-            try:
+            try:                
+                # VideoCaptureから1フレーム読み込む
                 ret, frame = cap.read()
                 image, bboxes, bboxes_traffic, bboxes_pdstrn = obj_inference(detector, frame)
+                           
+                print("========>>> ", bboxes_traffic.shape, bboxes_pdstrn.shape)
+    
+                img_lists = []
+                if bboxes_traffic.shape[0] > 0:
+                    #error処理もちゃんと入れること
+                    for bbox in bboxes_traffic:
+                        #intじゃないとエラーが出る。
+                        x1 = int(bbox[0])
+                        y1 = int(bbox[1])
+                        x2 = int(bbox[2])
+                        y2 = int(bbox[3])
+    
+                        trm_img = image[y1:y2,x1:x2]
+                        img_lists.append([trm_img])
+                if bboxes_pdstrn.shape[0] > 0:
+                    for bbox in bboxes_pdstrn:
+                        #intじゃないとエラーが出る。
+                        x1 = int(bbox[0])
+                        y1 = int(bbox[1])
+                        x2 = int(bbox[2])
+                        y2 = int(bbox[3])
+            
+                        trm_img = image[y1:y2,x1:x2]
+                        img_lists.append([trm_img])
+                
+                print("start")
+                if len(img_lists) > 0:
+                    res_data = extract_color_info(img_lists)
+                    print("(r, g, b, h, s, v): ", res_data[0][4])
+    
+                    for input_data in res_data:
+                        input_data = np.array(input_data[4])
+                        pred, label_name = inference(input_data,  clf)
+                    print("予想ラベル出力: ", label_name)
+
             except:
-                break
+                pass
     
             if arg == "video":
                 writer.write(image) # 画像を1フレーム分として書き込み
@@ -68,6 +112,7 @@ def cam(arg, detector):
     writer.release()
     cv2.destroyAllWindows()
 
+#Falseにするとトリミング画像を保存しない
 def obj_inference(detector, image, count=1, image_name=None, flag=False):
     bboxes_traffic = ""
     bboxes_pdstrn = ""
@@ -77,8 +122,8 @@ def obj_inference(detector, image, count=1, image_name=None, flag=False):
         bboxes_traffic, bboxes_pdstrn = extract_specific_object(image, bboxes, count, image_name=image_name, flag=flag)
     else:
         bboxes_traffic, bboxes_pdstrn = extract_specific_object(image, bboxes, count, image_name=image_name, flag=flag)
-
-    image  = draw_bboxes(image, bboxes)
+    
+        ###image  = draw_bboxes(image, bboxes)
 
     return image, bboxes, bboxes_traffic, bboxes_pdstrn
 
