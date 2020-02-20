@@ -123,10 +123,11 @@ def cam(arg, detector):
                     #print(np.array(mass_list)) #Debug用
                     result[obj_name] = mass_list
 
+                image  = draw_bboxes(image, result)
+
                 print(result)
                 del result                        
                 
-    
             if arg == "video":
                 writer.write(image) # 画像を1フレーム分として書き込み
     
