@@ -143,8 +143,15 @@ def extract_color_info(images):
             print("リサイズに失敗しました。")
             print("画像の中身：", img, "画像のshape", img.shape)
 
-        color_arr, hsv, img = color_info(img)
-        hist_r, hist_g, hist_b = color_hist(img)
+        try:
+            color_arr, hsv, img = color_info(img)
+            hist_r, hist_g, hist_b = color_hist(img)
+        except:
+            print("画像の読み込みに失敗しました。")
+            continue
+            #error: (-215:Assertion failed) !_src.empty() in function 'cvtColor'ってエラーが出ることが多かった。
+            #color_info関数のhsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)の箇所でエラーが起こっている。
+
         hist_clr = np.vstack((hist_r, hist_g))
         hist_clr = np.vstack((hist_clr, hist_b))
         red_mask, red_masked_img, avg_red_masked_img = detect_red_color(img, hsv)
