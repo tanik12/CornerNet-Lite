@@ -104,8 +104,6 @@ def detect_yellow_color(img, hsv):
 def color_info(img):
     color_arr = np.array([])         
 
-    img =  cv2.resize(img,(50, 50)) #あとで直す
-
     # RGB平均値を出力
     # flattenで一次元化しmeanで平均を取得 
     b = img.T[0].flatten().mean()
@@ -137,12 +135,15 @@ def extract_color_info(images):
     
     for img in images:
         tmpB = []
-
         img = img[0]
-        #img = cv2.imread(img, cv2.IMREAD_COLOR)
-        print("FFFFFFFFFFFFFFFFf")
+
+        try:
+            img =  cv2.resize(img,(50, 50)) #あとで直す
+        except:
+            print("リサイズに失敗しました。")
+            print("画像の中身：", img, "画像のshape", img.shape)
+
         color_arr, hsv, img = color_info(img)
-        print("lllllllllllllllll")
         hist_r, hist_g, hist_b = color_hist(img)
         hist_clr = np.vstack((hist_r, hist_g))
         hist_clr = np.vstack((hist_clr, hist_b))
