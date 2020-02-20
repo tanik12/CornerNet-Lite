@@ -10,9 +10,7 @@ from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score
 import pickle
 
-label_dict = {0:"pedestrian_signal_blue", 1:"pedestrian_signal_red", 
-              2:"traffic_signal_blue", 3:"traffic_signal_red", 4:"traffic_signal_yellow", 
-              5:"pedestrian_signal_unknown", 6:"traffic_signal_unknown"}
+label_dict = {0:"blue", 1:"red", 2:"yellow", 3:"unknown"}
 
 def dir_check(model_dirpath):
     if os.path.exists(model_dirpath):
