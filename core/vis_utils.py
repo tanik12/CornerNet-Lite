@@ -66,13 +66,13 @@ import os
 ###            )
 ###    return image
 
-def draw_bboxes(image, bboxes, font_size=0.3, thresh=0.35, colors=None):
+def draw_bboxes(image, bboxes, font_size=0.5, thresh=0.35, colors=None):
     image = image.copy()
+    name_dict = {"traffic_signal_blue":"ts_blue", "traffic_signal_red":"ts_red", "traffic_signal_yellow":"ts_yellow", "traffic_signal_unknown":"ts_unknown",
+                 "pedestrian_signal_blue":"ps_blue", "pedestrian_signal_red":"ps_red", "pedestrian_signal_unknown":"ps_unknown"}
     
     for cat_name in bboxes:
-        if len(bboxes[cat_name]) > 0:
-            cat_size  = cv2.getTextSize(bboxes[cat_name][0][5], cv2.FONT_HERSHEY_SIMPLEX, font_size, 2)[0]
-        elif len(bboxes[cat_name]) == 0:
+        if len(bboxes[cat_name]) == 0:
             print(cat_name + "のbboxに関する情報がありませんでした。")
             continue
 
@@ -86,13 +86,16 @@ def draw_bboxes(image, bboxes, font_size=0.3, thresh=0.35, colors=None):
             color_name = np.array(bbox).copy()
             bbox = np.array(bbox[0:4]).astype(np.int32)
 
+            obj_name = name_dict[cat_name + "_" + color_name[5]]
+            cat_size  = cv2.getTextSize(obj_name, cv2.FONT_HERSHEY_SIMPLEX, font_size, 2)[0]
+
             if bbox[1] - cat_size[1] - 2 < 0:
                 cv2.rectangle(image,
                     (bbox[0], bbox[1] + 2),
                     (bbox[0] + cat_size[0], bbox[1] + cat_size[1] + 2),
                     color, -1
                 )
-                cv2.putText(image, color_name[5],
+                cv2.putText(image, obj_name,
                     (bbox[0], bbox[1] + cat_size[1] + 2),
                     cv2.FONT_HERSHEY_SIMPLEX, font_size, (0, 0, 0), thickness=1
                 )
@@ -102,7 +105,7 @@ def draw_bboxes(image, bboxes, font_size=0.3, thresh=0.35, colors=None):
                     (bbox[0] + cat_size[0], bbox[1] - 2),
                     color, -1
                 )
-                cv2.putText(image, color_name[5],
+                cv2.putText(image, obj_name,
                     (bbox[0], bbox[1] - 2),
                     cv2.FONT_HERSHEY_SIMPLEX, font_size, (0, 0, 0), thickness=1
                 )
