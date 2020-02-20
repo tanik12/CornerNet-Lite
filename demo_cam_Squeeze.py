@@ -66,7 +66,13 @@ def cam(arg, detector):
               
             image, bboxes, bboxes_traffic, bboxes_pdstrn = obj_inference(detector, frame)
                                
-            img_lists = []
+            traffic_trm_imges = []
+            pdstrn_trm_imges = []
+            trm_imges_dict = {}
+            bboxes_dict = {"traffic_signal":bboxes_traffic, "pedestrian_signal":bboxes_pdstrn}
+
+            result = {}
+
             if bboxes_traffic.shape[0] > 0:
                 try:
                     for bbox in bboxes_traffic:
@@ -76,7 +82,7 @@ def cam(arg, detector):
                         y2 = int(bbox[3])
     
                         trm_img = image[y1:y2,x1:x2]
-                        img_lists.append([trm_img])
+                        traffic_trm_imges.append([trm_img])
                 except:
                     print("交通信号機のトリミングを試みましたが失敗しました")
 
@@ -89,25 +95,44 @@ def cam(arg, detector):
                         y2 = int(bbox[3])
                         
                         trm_img = image[y1:y2,x1:x2]
-                        img_lists.append([trm_img])
+                        pdstrn_trm_imges.append([trm_img])
                 except:
                     print("歩行者信号機のトリミングを試みましたが失敗しました")
 
-            if len(img_lists) > 0:
-                res_data = extract_color_info(img_lists)
-                #print("(r, g, b, h, s, v): ", res_data[0][4]) #Debug用
+            trm_imges_dict["traffic_signal"] = traffic_trm_imges
+            trm_imges_dict["pedestrian_signal"] = pdstrn_trm_imges
 
-                for input_data in res_data:
-                    input_data = np.array(input_data[4])
-                    pred, label_name = inference(input_data,  clf)
-                print("予想ラベル出力: ", label_name)
+            if len(trm_imges_dict["traffic_signal"]) + len(trm_imges_dict["pedestrian_signal"]) > 0:
+                for obj_name in ["traffic_signal", "pedestrian_signal"]:
+                    mass_list = []
+                    bboxes_info = bboxes_dict[obj_name]
+                    res_data = extract_color_info(trm_imges_dict[obj_name])
+                    #print("(r, g, b, h, s, v): ", res_data[0][4]) #Debug用
+    
+                    for input_data, bbox_info in zip(res_data, bboxes_info):
+                        chunk_list = []
+                        input_data = np.array(input_data[4])
+                        pred, label_name = inference(input_data,  clf)
+
+                        #bboxes_info
+                        chunk_list = bbox_info.tolist()
+                        chunk_list.append(label_name)
+                        chunk_list.append("信号色の確率値入れる")
+                        mass_list.append(chunk_list)
+                    
+                    #print(np.array(mass_list)) #Debug用
+                    result[obj_name] = mass_list
+
+                print(result)
+                del result                        
+                
     
             if arg == "video":
                 writer.write(image) # 画像を1フレーム分として書き込み
     
             # 加工なし画像を表示する
             cv2.imshow('Raw Frame', image)
-            
+
             # キー入力でqを押したら終了する
             k = cv2.waitKey(1)
             if k == ord('q'):
