@@ -7,6 +7,21 @@ import sys
 import glob
 import os
 
+from extract_color import extract_color_info
+from  model import dir_check, load_model, inference
+import numpy as np
+
+def camera_open():
+    try:
+        for num in range(10):
+            cap = cv2.VideoCapture(num)
+            if cap.isOpened():
+                print("カメラデバイスが見つかりました。番号は" + str(num) + "番です。")
+                return cap
+    except:
+        print("カメラデバイスが見つかりませんでした。")
+        sys.exit()
+
 def load_color4train(data_path):
     imgs_path = glob.glob(data_path)
     return imgs_path 
@@ -16,6 +31,10 @@ def cam(arg, detector):
     save_flag = False
     print(arg)
 
+    current_path = os.getcwd()
+    model_dirpath = current_path + "/model"
+    clf = load_model(model_dirpath)
+
     if arg == "video":
         #cap = cv2.VideoCapture('/home/gisen/Documents/rosbag/2019-07-09-15-25-21.avi')
         cap = cv2.VideoCapture('/home/gisen/Documents/rosbag/out_short.mp4')
@@ -23,12 +42,12 @@ def cam(arg, detector):
         height = int(cap.get(4))
         writer = record(width, height)
     elif arg == "camera":
-        cap = cv2.VideoCapture(0)   
+        cap = camera_open()   
         cap.set(cv2.CAP_PROP_FPS, 60)           # カメラFPSを60FPSに設定
         cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640) # カメラ画像の横幅を1280に設定
         cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480) # カメラ画像の縦幅を720に設定
     elif arg == "make_color4train":
-        cap = cv2.VideoCapture(0)   
+        cap = camera_open()  
         cap.set(cv2.CAP_PROP_FPS, 60)           # カメラFPSを60FPSに設定
         cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640) # カメラ画像の横幅を1280に設定
         cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480) # カメラ画像の縦幅を720に設定
@@ -38,23 +57,88 @@ def cam(arg, detector):
 
     #while True:
     while (cap.isOpened()):
-        if arg == "video" or arg == "camera":
+        if arg == "video" or arg == "camera":              
             # VideoCaptureから1フレーム読み込む
-            try:
-                ret, frame = cap.read()
-                image, bboxes, bboxes_traffic, bboxes_pdstrn = obj_inference(detector, frame)
-            except:
-                break
+            ret, frame = cap.read()
+            if not ret:
+                print("画像の取得に失敗しました。")
+                continue
+              
+            image, bboxes, bboxes_traffic, bboxes_pdstrn = obj_inference(detector, frame)
+                               
+            traffic_trm_imges = []
+            pdstrn_trm_imges = []
+            trm_imges_dict = {}
+            bboxes_dict = {"traffic_signal":bboxes_traffic, "pedestrian_signal":bboxes_pdstrn}
+
+            result = {}
+
+            if bboxes_traffic.shape[0] > 0:
+                try:
+                    for bbox in bboxes_traffic:
+                        x1 = int(bbox[0])
+                        y1 = int(bbox[1])
+                        x2 = int(bbox[2])
+                        y2 = int(bbox[3])
     
+                        trm_img = image[y1:y2,x1:x2]
+                        traffic_trm_imges.append([trm_img])
+                except:
+                    print("交通信号機のトリミングを試みましたが失敗しました")
+
+            if bboxes_pdstrn.shape[0] > 0:
+                try:
+                    for bbox in bboxes_pdstrn:
+                        x1 = int(bbox[0])
+                        y1 = int(bbox[1])
+                        x2 = int(bbox[2])
+                        y2 = int(bbox[3])
+                        
+                        trm_img = image[y1:y2,x1:x2]
+                        pdstrn_trm_imges.append([trm_img])
+                except:
+                    print("歩行者信号機のトリミングを試みましたが失敗しました")
+
+            trm_imges_dict["traffic_signal"] = traffic_trm_imges
+            trm_imges_dict["pedestrian_signal"] = pdstrn_trm_imges
+
+            if len(trm_imges_dict["traffic_signal"]) + len(trm_imges_dict["pedestrian_signal"]) > 0:
+                for obj_name in ["traffic_signal", "pedestrian_signal"]:
+                    mass_list = []
+                    bboxes_info = bboxes_dict[obj_name]
+                    res_data = extract_color_info(trm_imges_dict[obj_name])
+                    #print("(r, g, b, h, s, v): ", res_data[0][4]) #Debug用
+    
+                    for input_data, bbox_info in zip(res_data, bboxes_info):
+                        chunk_list = []
+                        input_data = np.array(input_data[4])
+                        pred, label_name = inference(input_data,  clf)
+
+                        #bboxes_info
+                        chunk_list = bbox_info.tolist()
+                        chunk_list.append(label_name)
+                        chunk_list.append("信号色の確率値入れる")
+                        mass_list.append(chunk_list)
+                    
+                    #print(np.array(mass_list)) #Debug用
+                    result[obj_name] = mass_list
+
+                image  = draw_bboxes(image, result)
+
+                print(result)
+                del result                        
+                
             if arg == "video":
                 writer.write(image) # 画像を1フレーム分として書き込み
     
             # 加工なし画像を表示する
             cv2.imshow('Raw Frame', image)
-            # キー入力を1ms待って、k が27（ESC）だったらBreakする
+
+            # キー入力でqを押したら終了する
             k = cv2.waitKey(1)
-            if k == 27:
-                break
+            if k == ord('q'):
+                cv2.destroyAllWindows()
+                sys.exit()
         else:
             for img_path in imgs_path:
                 img_name = os.path.basename(img_path)
@@ -68,6 +152,7 @@ def cam(arg, detector):
     writer.release()
     cv2.destroyAllWindows()
 
+#Falseにするとトリミング画像を保存しない
 def obj_inference(detector, image, count=1, image_name=None, flag=False):
     bboxes_traffic = ""
     bboxes_pdstrn = ""
@@ -77,8 +162,8 @@ def obj_inference(detector, image, count=1, image_name=None, flag=False):
         bboxes_traffic, bboxes_pdstrn = extract_specific_object(image, bboxes, count, image_name=image_name, flag=flag)
     else:
         bboxes_traffic, bboxes_pdstrn = extract_specific_object(image, bboxes, count, image_name=image_name, flag=flag)
-
-    image  = draw_bboxes(image, bboxes)
+    
+        ###image  = draw_bboxes(image, bboxes)
 
     return image, bboxes, bboxes_traffic, bboxes_pdstrn
 
