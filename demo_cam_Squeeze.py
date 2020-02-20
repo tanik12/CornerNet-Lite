@@ -11,6 +11,17 @@ from extract_color import extract_color_info
 from  model import dir_check, load_model, inference
 import numpy as np
 
+def camera_open():
+    try:
+        for num in range(10):
+            cap = cv2.VideoCapture(num)
+            if cap.isOpened():
+                print("カメラデバイスが見つかりました。番号は" + str(num) + "番です。")
+                return cap
+    except:
+        print("カメラデバイスが見つかりませんでした。")
+        sys.exit()
+
 def load_color4train(data_path):
     imgs_path = glob.glob(data_path)
     return imgs_path 
@@ -31,12 +42,12 @@ def cam(arg, detector):
         height = int(cap.get(4))
         writer = record(width, height)
     elif arg == "camera":
-        cap = cv2.VideoCapture(0)   
+        cap = camera_open()   
         cap.set(cv2.CAP_PROP_FPS, 60)           # カメラFPSを60FPSに設定
         cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640) # カメラ画像の横幅を1280に設定
         cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480) # カメラ画像の縦幅を720に設定
     elif arg == "make_color4train":
-        cap = cv2.VideoCapture(0)   
+        cap = camera_open()  
         cap.set(cv2.CAP_PROP_FPS, 60)           # カメラFPSを60FPSに設定
         cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640) # カメラ画像の横幅を1280に設定
         cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480) # カメラ画像の縦幅を720に設定
@@ -46,19 +57,19 @@ def cam(arg, detector):
 
     #while True:
     while (cap.isOpened()):
-        if arg == "video" or arg == "camera":
-            try:                
-                # VideoCaptureから1フレーム読み込む
-                ret, frame = cap.read()
-                image, bboxes, bboxes_traffic, bboxes_pdstrn = obj_inference(detector, frame)
-                           
-                print("========>>> ", bboxes_traffic.shape, bboxes_pdstrn.shape)
-    
-                img_lists = []
-                if bboxes_traffic.shape[0] > 0:
-                    #error処理もちゃんと入れること
+        if arg == "video" or arg == "camera":              
+            # VideoCaptureから1フレーム読み込む
+            ret, frame = cap.read()
+            if not ret:
+                print("画像の取得に失敗しました。")
+                continue
+              
+            image, bboxes, bboxes_traffic, bboxes_pdstrn = obj_inference(detector, frame)
+                               
+            img_lists = []
+            if bboxes_traffic.shape[0] > 0:
+                try:
                     for bbox in bboxes_traffic:
-                        #intじゃないとエラーが出る。
                         x1 = int(bbox[0])
                         y1 = int(bbox[1])
                         x2 = int(bbox[2])
@@ -66,39 +77,42 @@ def cam(arg, detector):
     
                         trm_img = image[y1:y2,x1:x2]
                         img_lists.append([trm_img])
-                if bboxes_pdstrn.shape[0] > 0:
-                    for bbox in bboxes_pdstrn:
-                        #intじゃないとエラーが出る。
-                        x1 = int(bbox[0])
-                        y1 = int(bbox[1])
-                        x2 = int(bbox[2])
-                        y2 = int(bbox[3])
-            
-                        trm_img = image[y1:y2,x1:x2]
-                        img_lists.append([trm_img])
-                
-                print("start")
-                if len(img_lists) > 0:
-                    res_data = extract_color_info(img_lists)
-                    print("(r, g, b, h, s, v): ", res_data[0][4])
-    
-                    for input_data in res_data:
-                        input_data = np.array(input_data[4])
-                        pred, label_name = inference(input_data,  clf)
-                    print("予想ラベル出力: ", label_name)
+                except:
+                    print("交通信号機のトリミングを試みましたが失敗しました")
 
-            except:
-                pass
+            if bboxes_pdstrn.shape[0] > 0:
+                try:
+                    for bbox in bboxes_pdstrn:
+                        x1 = int(bbox[0])
+                        y1 = int(bbox[1])
+                        x2 = int(bbox[2])
+                        y2 = int(bbox[3])
+                        
+                        trm_img = image[y1:y2,x1:x2]
+                        img_lists.append([trm_img])
+                except:
+                    print("歩行者信号機のトリミングを試みましたが失敗しました")
+
+            if len(img_lists) > 0:
+                res_data = extract_color_info(img_lists)
+                #print("(r, g, b, h, s, v): ", res_data[0][4]) #Debug用
+
+                for input_data in res_data:
+                    input_data = np.array(input_data[4])
+                    pred, label_name = inference(input_data,  clf)
+                print("予想ラベル出力: ", label_name)
     
             if arg == "video":
                 writer.write(image) # 画像を1フレーム分として書き込み
     
             # 加工なし画像を表示する
             cv2.imshow('Raw Frame', image)
-            # キー入力を1ms待って、k が27（ESC）だったらBreakする
+            
+            # キー入力でqを押したら終了する
             k = cv2.waitKey(1)
-            if k == 27:
-                break
+            if k == ord('q'):
+                cv2.destroyAllWindows()
+                sys.exit()
         else:
             for img_path in imgs_path:
                 img_name = os.path.basename(img_path)
